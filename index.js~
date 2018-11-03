@@ -57,11 +57,14 @@ io.sockets.on('connection', function(socket) {
 		 room_leader[room].emit('approve or deny doubt', room, socketID, leaderID,timestamp);
 		
     });
-	socket.on('doubt answered', function(room,socketID,leaderID,answer) {
-		 student_doubt.emit('reply student', room, socketID, leaderID,answer);
+	socket.on('doubt approved', function(room,socketID,leaderID) {
+		 student_doubt.emit('approve doubt', room, socketID, leaderID);
 		
     });
-
+socket.on('doubt denied', function(room,socketID,leaderID) {
+		 student_doubt.emit('deny doubt', room, socketID, leaderID);
+		
+    });
     socket.on('ipaddr', function() {
         var ifaces = os.networkInterfaces();
         for (var dev in ifaces) {

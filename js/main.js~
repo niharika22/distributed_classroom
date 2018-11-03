@@ -90,7 +90,8 @@ socket.on('reply student', function(room,socketID, leaderID,answer) {
     	alert('doubt is approved by prof');
 	}
 	else{
-		alert('doubt is denied by prof');
+	alert('doubt is denied by prof');
+	
 	}
 
 });
