@@ -9,10 +9,10 @@ var fileServer = new(nodeStatic.Server)();
 var app = http.createServer(function(req, res) {
     fileServer.serve(req, res);
 }).listen(8080,'0.0.0.0');
-
 var room_size_limit = 100;
 var student_doubt;
 var room_leader = {};
+
 var io = socketIO.listen(app);
 io.sockets.on('connection', function(socket) {
 
@@ -59,6 +59,13 @@ io.sockets.on('connection', function(socket) {
     });
 	socket.on('doubt answered', function(room,socketID,leaderID,answer) {
 		 student_doubt.emit('reply student', room, socketID, leaderID,answer);
+		if(answer==true)
+		{
+			var numClients = io.sockets.adapter.rooms[room] ? Object.keys(io.sockets.adapter.rooms[room].sockets).length : 0;
+			log(numClients);
+			student_doubt.emit('send doubt video', room, student_doubt.id,Object.keys(io.sockets.adapter.rooms[room].sockets));
+		}
+		
 		
     });
 

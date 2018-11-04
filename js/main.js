@@ -94,7 +94,16 @@ socket.on('reply student', function(room,socketID, leaderID,answer) {
 	}
 
 });
+socket.on('send doubt video', function(room, studentId,peerIds) {
+	getVideoForBroadcast();
+	myID=studentId;
+	
+	for(var i=0;i<peerIds.length;i++){	
+		    doCall(peerIds[i]);
+		}
+}
 
+});
 socket.on('full', function(room) {
     console.log('Room ' + room + ' is full');
 });
@@ -153,7 +162,7 @@ socket.on('message', function(message) {
 
             // Peers connect to leader
             // Leader on receiving peer description answers back
-            if (!isLeader && message.srcID == roomLeaderID) {
+            if (!isLeader) {
                 trace('Creating a connection');
                 createPeerConnection(message.srcID);
             }
