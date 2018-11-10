@@ -80,21 +80,58 @@ socket.on('approve or deny doubt', function(room,socketID, leaderID,timestamp) {
 	
     if(isLeader){
 	var answer=confirm("Student raised a doubt. To approve press OK otherwise press CANCEL");
-	
 		socket.emit('doubt answered', room,socketID,leaderID,answer);
 	
 }
 });
+socket.on('question asked', function(room,socketID, leaderID,question) {	
+    if(isLeader){
+	var answer=prompt(question);
+	socket.emit('answer', room,socketID,leaderID,question,answer);
+		//socket.emit('doubt answered', room,socketID,leaderID,answer);
+	
+}
+});
+
+socket.on('answerstudent', function(room,socketID, leaderID,question,answer) {	
+	console.log('Question ');
+	document.getElementById('chat').innerHTML +="Question : "+question+"            Answer : "+answer+"<br><br>";
+	
+});
 socket.on('reply student', function(room,socketID, leaderID,answer) {
 	if(answer==true){
-    	alert('doubt is approved by prof');
+	var question = prompt("Doubt Approved\nPlease ask doubt : ");
+	socket.emit('question', room,socketID,leaderID,question);
+	
+	
 	}
 	else{
-		alert('doubt is denied by prof');
+		alert('Doubt is denied by teacher');
 	}
 
 });
+socket.on('asklater', function(room,socketID, leaderID,answer) {
+	alert('Ask doubt later!!');
+});
+/*socket.on('send doubt video', function(room, studentId,peerIds) {
+	getVideoForBroadcast();
+	myID=studentId;
+	
+	for(var i=0;i<peerIds.length;i++){	
+		if(studentId!=peerIds[i]){
+			createPeerConnection2(studentId,peerIds[i]);
+		    if (typeof videoStream !== 'undefined') {
+		        pc[peerIds[i]].addStream(videoStream);
+		    } else {
+		        console.log('Local video stream has not been captured');
+		        console.log('No peer connection with ' + peerIds[i] + ' attempted.');
+		        return;
+		    }
+		    doCall(peerIds[i]);
+		}
+}
 
+});*/
 socket.on('full', function(room) {
     console.log('Room ' + room + ' is full');
 });
