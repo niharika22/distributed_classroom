@@ -58,15 +58,13 @@ io.sockets.on('connection', function(socket) {
 		
     });
 	socket.on('doubt answered', function(room,socketID,leaderID,answer) {
-		 student_doubt.emit('reply student', room, socketID, leaderID,answer);
-		if(answer==true)
+        student_doubt.emit('reply student', room, socketID, leaderID,answer);
+        if(answer==true)
 		{
-			var numClients = io.sockets.adapter.rooms[room] ? Object.keys(io.sockets.adapter.rooms[room].sockets).length : 0;
+    	    var numClients = io.sockets.adapter.rooms[room] ? Object.keys(io.sockets.adapter.rooms[room].sockets).length : 0;
 			log(numClients);
 			student_doubt.emit('send doubt video', room, student_doubt.id,Object.keys(io.sockets.adapter.rooms[room].sockets));
 		}
-		
-		
     });
 
     socket.on('ipaddr', function() {

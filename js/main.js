@@ -68,21 +68,17 @@ socket.on('joined', function(room, socketID, leaderID) {
     btn.appendChild(t);
     document.body.appendChild(btn);
 	btn.onclick = function(){
-		//socket.emit('doubtraised', room,socketID,);
-	var date = new Date();
-    var timestamp = date.getTime();
-	socket.emit('doubt raised', room,socketID,leaderID,timestamp);
-	 	
+		var date = new Date();
+    	var timestamp = date.getTime();
+		socket.emit('doubt raised', room,socketID,leaderID,timestamp);
   };	
 });
 
 socket.on('approve or deny doubt', function(room,socketID, leaderID,timestamp) {
 	
     if(isLeader){
-	var answer=confirm("Student raised a doubt. To approve press OK otherwise press CANCEL");
-	
+		var answer=confirm("Student raised a doubt. To approve press OK otherwise press CANCEL");
 		socket.emit('doubt answered', room,socketID,leaderID,answer);
-	
 }
 });
 socket.on('reply student', function(room,socketID, leaderID,answer) {
@@ -99,11 +95,11 @@ socket.on('send doubt video', function(room, studentId,peerIds) {
 	myID=studentId;
 	
 	for(var i=0;i<peerIds.length;i++){	
-		    doCall(peerIds[i]);
-		}
+		doCall2(peerIds[i]);
+	}
 }
 
-});
+);
 socket.on('full', function(room) {
     console.log('Room ' + room + ' is full');
 });
@@ -175,7 +171,8 @@ socket.on('message', function(message) {
                 // create and send description
                 doAnswer(message.srcID);
             }
-        } else if (message.type === 'candidate') {
+        } 
+		else if (message.type === 'candidate') {
             trace('Adding ice candidate');
             var candidate = new RTCIceCandidate({
                 sdpMLineIndex: message.label,
@@ -183,6 +180,25 @@ socket.on('message', function(message) {
             });
             pc[message.srcID].addIceCandidate(candidate);
         }
+		else if(message.type==='desc2'){
+			trace('Received description from peer');
+			console.log('in desc');
+            // Peers connect to leader
+            // Leader on receiving peer description answers back
+            if (message.destID!=message.srcID) {
+                trace('Creating a connection');
+                createPeerConnection(message.srcID);
+            }
+
+            // Add remote description
+            trace('Adding remote description to RTCPeerConnection');
+            pc[message.srcID].setRemoteDescription(new RTCSessionDescription(message.content));
+
+            if (message.destID!=message.srcID) {
+                // create and send description
+                doAnswer(message.srcID);
+            }
+		}
     }
 });
 
@@ -257,6 +273,15 @@ function doCall(peerID) {
         handleCreateOfferError
     );
 }
+function doCall2(peerID) {
+    console.log('Sending offer to peer');
+    pc[peerID].createOffer().then(
+        function(sessionDescription) {
+            setLocalAndSendMessage2(sessionDescription, peerID);
+        },
+        handleCreateOfferError
+    );
+}
 
 function doAnswer(peerID) {
     console.log('Sending answer to peer.');
@@ -275,6 +300,17 @@ function setLocalAndSendMessage(sessionDescription, peerID) {
         ' to peer ', peerID);
     sendMessage({
         type: 'description',
+        destID: peerID,
+        content: sessionDescription
+    });
+}
+function setLocalAndSendMessage2(sessionDescription, peerID) {
+    pc[peerID].setLocalDescription(sessionDescription);
+    sessionDescription.destID = peerID;
+    console.log('setLocalAndSendMessage sending message', sessionDescription,
+        ' to peer ', peerID);
+    sendMessage({
+        type: 'desc2',
         destID: peerID,
         content: sessionDescription
     });
