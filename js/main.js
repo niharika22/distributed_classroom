@@ -2,11 +2,13 @@
 
 var isLeader = false;
 var turnReady;
-
+var btn2;
+var t;
 var myID;
 var roomLeaderID;
 var pc = {};
 var videoStream;
+var teststream;
 var videoSrc;
 var videoCaptureStatus = false;
 
@@ -72,6 +74,7 @@ socket.on('joined', function(room, socketID, leaderID) {
     var t = document.createTextNode("Raise Doubt");
     btn.appendChild(t);
     document.body.appendChild(btn);
+	
     btn.onclick = function(){
         var date = new Date();
         var timestamp = date.getTime();
@@ -101,6 +104,16 @@ socket.on('doubt reply', function(socketID, answer) {
 socket.on('change video source', function(socketID) {
     trace('Video source changed to ' + socketID);
     videoSrc = socketID;
+	if(isLeader){
+	btn2 = document.createElement("BUTTON");
+    t = document.createTextNode("STOP STUDENTS VIDEO");
+    btn2.appendChild(t);
+    document.body.appendChild(btn2);
+	btn2.onclick = function() {
+		
+        socket.emit('myevent',room);	
+	}
+    };
 });
 
 socket.on('send doubt video', function(room, studentID, peerIds) {
@@ -108,8 +121,8 @@ socket.on('send doubt video', function(room, studentID, peerIds) {
     if ( myID != studentID ) {
         return;
     }
-
-    trace('Attempting to initialize video capture');
+	
+   trace('Attempting to initialize video capture');
 
     getVideoForBroadcast( function() {
         trace('Calling all students in the room');
@@ -122,7 +135,16 @@ socket.on('send doubt video', function(room, studentID, peerIds) {
         }
     });
 });
-
+socket.on('ss', function(room, studentID, peerIds) {
+	//videoStream = teststream;
+   	remoteVideo.srcObject = teststream;
+	if(isLeader)
+		remoteVideo.srcObject = null;
+	else
+		localVideo.srcObject = null;
+	btn2.remove(btn2);
+	
+});
 socket.on('full', function(room) {
     console.log('Room ' + room + ' is full');
 });
@@ -142,6 +164,7 @@ socket.on('join', function (room, peerID) {
         }
         doCall(peerID);
     }
+	
 
 });
 
@@ -339,6 +362,8 @@ function requestTurn(turnURL) {
 
 function handleRemoteStreamAdded(event) {
     console.log('Remote stream added.');
+	if(videoSrc==roomLeaderID)
+		teststream=event.stream;
     videoStream = event.stream;
     remoteVideo.srcObject = event.stream;
 }

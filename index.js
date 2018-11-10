@@ -70,6 +70,13 @@ io.sockets.on('connection', function(socket) {
         }
     });
 
+    socket.on('myevent', function(room) {
+		//io.sockets.in(room).emit('change video source', socket.id);
+		
+		io.sockets.in(room).emit('ss', room, student_doubt.id, Object.keys(io.sockets.adapter.rooms[room].sockets));
+
+    });
+
     socket.on('ipaddr', function() {
         var ifaces = os.networkInterfaces();
         for (var dev in ifaces) {
