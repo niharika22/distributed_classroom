@@ -9,6 +9,7 @@ var fileServer = new(nodeStatic.Server)();
 var app = http.createServer(function(req, res) {
     fileServer.serve(req, res);
 }).listen(8080,'0.0.0.0');
+
 var room_size_limit = 100;
 var student_doubt;
 var room_leader = {};
@@ -52,19 +53,21 @@ io.sockets.on('connection', function(socket) {
         socket.broadcast.to(room).emit('message', message);
     });
 
-	socket.on('doubt raised', function(room,socketID,leaderID,timestamp) {
-		 student_doubt=socket;
-		 room_leader[room].emit('approve or deny doubt', room, socketID, leaderID,timestamp);
-		
+    socket.on('doubt raised', function(room, timestamp) {
+        student_doubt=socket;
+        room_leader[room].emit('approve or deny doubt', room, socket.id, timestamp);
     });
-	socket.on('doubt answered', function(room,socketID,leaderID,answer) {
-        student_doubt.emit('reply student', room, socketID, leaderID,answer);
-        if(answer==true)
-		{
-    	    var numClients = io.sockets.adapter.rooms[room] ? Object.keys(io.sockets.adapter.rooms[room].sockets).length : 0;
-			log(numClients);
-			student_doubt.emit('send doubt video', room, student_doubt.id,Object.keys(io.sockets.adapter.rooms[room].sockets));
-		}
+
+    socket.on('doubt answered', function(room, socketID, answer) {
+        student_doubt.emit('doubt reply', socketID, answer);
+        if (answer == true) {
+            student_doubt.broadcast.to(room).emit('change video source', socketID);
+
+            var clientsInRoom = io.sockets.adapter.rooms[room];
+            var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
+            student_doubt.emit('send doubt video', room, student_doubt.id, Object.keys(io.sockets.adapter.rooms[room].sockets));
+
+        }
     });
 
     socket.on('ipaddr', function() {
